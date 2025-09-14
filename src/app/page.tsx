@@ -1,10 +1,16 @@
-import Hero from "../components/Hero"; // path relative to page.tsx
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import Hero from "@/components/Hero";
+import Shop from "@/components/Shop";
+
+export default function HomePage() {
+  const [showShop, setShowShop] = useState(false);
+
   return (
-    <main>
-      <Hero />
-      {/* Other sections */}
-    </main>
+    <div className="relative w-full h-full">
+      {!showShop && <Hero setShowShop={setShowShop} />}
+      {showShop && <Shop />}
+    </div>
   );
 }
