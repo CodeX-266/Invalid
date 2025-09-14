@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Hero from "@/components/Hero";
-import Shop from "@/components/Shop";
+
 
 export default function HomePage() {
   const [showShop, setShowShop] = useState(false);
