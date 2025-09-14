@@ -168,11 +168,18 @@ export default function HeroShop() {
 
       {/* Shop Section */}
       <motion.section
-        className="absolute inset-0 bg-gray-900 z-20 overflow-y-auto"
+        className="absolute inset-0 z-20 overflow-y-auto"
         initial={{ y: "100%" }}
         animate={{ y: showShop ? 0 : "100%" }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
       >
+        {/* Dark Sexy Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 overflow-hidden">
+          {/* Optional subtle floating shapes for depth */}
+          <div className="absolute top-0 left-0 w-96 h-96 bg-gray-700 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-gray-600 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
+        </div>
+
         {/* Fixed Logo + Brand */}
         <div
           className="fixed top-5 left-0 w-full flex justify-start items-center px-6 py-2 z-30 cursor-pointer"
@@ -184,7 +191,7 @@ export default function HeroShop() {
           </span>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 md:px-16 py-24 text-white">
+        <div className="relative max-w-7xl mx-auto px-6 md:px-16 py-24 text-white z-10">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Our Collection</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {products.map((product) => (
@@ -193,7 +200,11 @@ export default function HeroShop() {
                 className="relative bg-gray-800 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300 shadow-xl"
                 whileHover={{ y: -10 }}
               >
-                <img src={product.image} alt={product.name} className="w-full h-72 object-cover" />
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-72 object-cover"
+                />
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
                   <p className="text-lg font-bold">{product.price}</p>
@@ -203,7 +214,7 @@ export default function HeroShop() {
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <button className="px-6 py-3 bg-indigo-600 rounded-full font-semibold hover:bg-indigo-500 transition">
+                  <button className="px-6 py-3 bg-gray-700 rounded-full font-semibold hover:bg-gray-600 transition">
                     Shop Now
                   </button>
                 </motion.div>
@@ -212,6 +223,7 @@ export default function HeroShop() {
           </div>
         </div>
       </motion.section>
+
     </div>
   );
 }
