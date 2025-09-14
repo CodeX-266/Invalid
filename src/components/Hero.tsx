@@ -3,8 +3,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect, ReactNode } from "react";
 import { Typewriter } from "react-simple-typewriter";
-import { useAuth } from "../context/AuthProvider";
-import Navbar from "@/components/Navbar"; // <-- import your Navbar component
+import Navbar from "@/components/Navbar";
 
 interface HeroShopProps {
   children?: ReactNode; // Allow passing additional elements like login button
@@ -26,17 +25,18 @@ const products = [
 ];
 
 export default function HeroShop({ children }: HeroShopProps) {
-  const { user } = useAuth();
   const [index, setIndex] = useState(0);
   const [slice, setSlice] = useState(false);
   const [showValid, setShowValid] = useState(false);
   const [showShop, setShowShop] = useState(false);
 
+  // Slide images every 10s
   useEffect(() => {
     const interval = setInterval(() => setIndex((prev) => (prev + 1) % images.length), 10000);
     return () => clearInterval(interval);
   }, []);
 
+  // Initial animations
   useEffect(() => {
     const timer1 = setTimeout(() => setSlice(true), 800);
     const timer2 = setTimeout(() => setShowValid(true), 1600);
@@ -69,8 +69,8 @@ export default function HeroShop({ children }: HeroShopProps) {
         />
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
-        {/* Navbar from component */}
-        <Navbar user={user}>{children}</Navbar>
+        {/* Navbar */}
+        <Navbar /> {/* ✅ Fixed: removed user and children props */}
 
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between w-full h-full px-8 md:px-16">
