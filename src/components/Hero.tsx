@@ -1,8 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Typewriter } from "react-simple-typewriter";
+import { useAuth } from "../context/AuthProvider";
+import Navbar from "@/components/Navbar"; // <-- import your Navbar component
+
+interface HeroShopProps {
+  children?: ReactNode; // Allow passing additional elements like login button
+}
 
 const images = [
   "/images/hero1.jpg",
@@ -19,19 +25,18 @@ const products = [
   { id: 6, name: "Classic Jacket", price: "$120", image: "/images/product6.webp" },
 ];
 
-export default function HeroShop() {
+export default function HeroShop({ children }: HeroShopProps) {
+  const { user } = useAuth();
   const [index, setIndex] = useState(0);
   const [slice, setSlice] = useState(false);
   const [showValid, setShowValid] = useState(false);
   const [showShop, setShowShop] = useState(false);
 
-  // Background slide every 10s
   useEffect(() => {
     const interval = setInterval(() => setIndex((prev) => (prev + 1) % images.length), 10000);
     return () => clearInterval(interval);
   }, []);
 
-  // INVALID → VALID animation
   useEffect(() => {
     const timer1 = setTimeout(() => setSlice(true), 800);
     const timer2 = setTimeout(() => setShowValid(true), 1600);
@@ -64,25 +69,11 @@ export default function HeroShop() {
         />
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
-        {/* Navbar */}
-        <nav className="absolute top-5 left-0 w-full flex justify-between items-center px-6 py-2 z-50 bg-transparent">
-          <div className="flex items-center space-x-3 cursor-pointer hover:scale-105 transition-transform">
-            <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
-            <span className="text-white text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              INVALID
-            </span>
-          </div>
-          <div className="hidden md:flex space-x-6 text-white font-semibold">
-            <a href="#" className="hover:text-indigo-400 transition-all duration-300 ease-in-out transform hover:scale-105">Home</a>
-            <a href="#" className="hover:text-indigo-400 transition-all duration-300 ease-in-out transform hover:scale-105">Shop</a>
-            <a href="#" className="hover:text-indigo-400 transition-all duration-300 ease-in-out transform hover:scale-105">About</a>
-            <a href="#" className="hover:text-indigo-400 transition-all duration-300 ease-in-out transform hover:scale-105">Contact</a>
-          </div>
-        </nav>
+        {/* Navbar from component */}
+        <Navbar user={user}>{children}</Navbar>
 
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between w-full h-full px-8 md:px-16">
-          {/* Left Side */}
           <div className="max-w-xl space-y-6 text-white mt-32 md:mt-0">
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
               Redefine Your{" "}
@@ -118,7 +109,6 @@ export default function HeroShop() {
             </div>
           </div>
 
-          {/* Right Side: INVALID → IN moves → VALID */}
           <div className="mt-12 md:mt-0 w-full h-[700px] relative flex items-center justify-end overflow-hidden">
             <div className="relative">
               <div className="flex text-white text-[12rem] md:text-[14rem] relative">
@@ -173,14 +163,11 @@ export default function HeroShop() {
         animate={{ y: showShop ? 0 : "100%" }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
       >
-        {/* Dark Sexy Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 overflow-hidden">
-          {/* Optional subtle floating shapes for depth */}
           <div className="absolute top-0 left-0 w-96 h-96 bg-gray-700 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
           <div className="absolute bottom-0 right-0 w-80 h-80 bg-gray-600 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
         </div>
 
-        {/* Fixed Logo + Brand */}
         <div
           className="fixed top-5 left-0 w-full flex justify-start items-center px-6 py-2 z-30 cursor-pointer"
           onClick={handleBack}
@@ -223,7 +210,6 @@ export default function HeroShop() {
           </div>
         </div>
       </motion.section>
-
     </div>
   );
 }
