@@ -5,6 +5,9 @@ import HeroShop from "@/components/Hero";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthProvider";
 
+// ⬇️ Add this line to disable prerendering issues with Firebase
+export const dynamic = "force-dynamic";
+
 export default function HomePage() {
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -34,9 +37,7 @@ export default function HomePage() {
       </HeroShop>
 
       {/* Auth Modal */}
-      {showAuthModal && (
-        <AuthModal onClose={() => setShowAuthModal(false)} />
-      )}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 }
