@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 import { useState, useEffect, ReactNode } from "react";
 import { Typewriter } from "react-simple-typewriter";
 import Navbar from "@/components/Navbar";
+import { useCart } from "@/context/CartProvider"; // ✅ Cart hook
 
 interface HeroShopProps {
-  children?: ReactNode; // Allow passing additional elements like login button
+  children?: ReactNode;
 }
 
 const images = [
@@ -29,6 +30,8 @@ export default function HeroShop({ children }: HeroShopProps) {
   const [slice, setSlice] = useState(false);
   const [showValid, setShowValid] = useState(false);
   const [showShop, setShowShop] = useState(false);
+
+  const { addToCart } = useCart(); // ✅ Cart hook
 
   // Slide images every 10s
   useEffect(() => {
@@ -70,7 +73,7 @@ export default function HeroShop({ children }: HeroShopProps) {
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
         {/* Navbar */}
-        <Navbar /> {/* ✅ Fixed: removed user and children props */}
+        <Navbar />
 
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between w-full h-full px-8 md:px-16">
@@ -168,6 +171,7 @@ export default function HeroShop({ children }: HeroShopProps) {
           <div className="absolute bottom-0 right-0 w-80 h-80 bg-gray-600 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
         </div>
 
+        {/* Back Button */}
         <div
           className="fixed top-5 left-0 w-full flex justify-start items-center px-6 py-2 z-30 cursor-pointer"
           onClick={handleBack}
@@ -178,6 +182,7 @@ export default function HeroShop({ children }: HeroShopProps) {
           </span>
         </div>
 
+        {/* Products */}
         <div className="relative max-w-7xl mx-auto px-6 md:px-16 py-24 text-white z-10">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Our Collection</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
@@ -201,8 +206,19 @@ export default function HeroShop({ children }: HeroShopProps) {
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <button className="px-6 py-3 bg-gray-700 rounded-full font-semibold hover:bg-gray-600 transition">
-                    Shop Now
+                  {/* ✅ Add to Cart button */}
+                  <button
+                    onClick={() =>
+                      addToCart({
+                        id: product.id,
+                        name: product.name,
+                        price: parseFloat(product.price.replace(/[^0-9.-]+/g, "")),
+                        image: product.image,
+                      })
+                    }
+                    className="px-6 py-3 bg-gray-700 rounded-full font-semibold hover:bg-gray-600 transition"
+                  >
+                    Add to Cart
                   </button>
                 </motion.div>
               </motion.div>
