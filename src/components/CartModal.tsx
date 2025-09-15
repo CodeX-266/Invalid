@@ -3,6 +3,9 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useCart } from "@/context/CartProvider";
+import { useAuth } from "@/context/AuthProvider";
+import { placeOrder } from "@/lib/firestore"; // 🔥 Import Firestore order function
+import { toast } from "react-hot-toast"; // optional for nice notifications
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -11,8 +14,25 @@ interface CartSidebarProps {
 
 export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const { cartItems = [], removeFromCart, updateQuantity } = useCart();
+  const { user } = useAuth();
 
   const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  const handleCheckout = async () => {
+  if (!user) {
+    alert("You must be signed in to place an order!");
+    return;
+  }
+
+  try {
+    const orderId = await placeOrder(user.uid, cartItems, total);
+    alert(`Order placed successfully! Order ID: ${orderId}`);
+    clearCart(); // function to empty cart
+  } catch (err) {
+    console.error(err);
+    alert("Failed to place order. Please try again.");
+  }
+};
 
   return (
     <>
@@ -44,7 +64,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           )}
 
           {cartItems.map((item) => (
-            <div key={item.id} className="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition">
+            <div
+              key={item.id}
+              className="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition"
+            >
               <Image src={item.image} alt={item.name} width={80} height={80} className="rounded" />
               <div className="flex-1">
                 <h3 className="text-white font-semibold">{item.name}</h3>
@@ -83,6 +106,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             <span className="text-white font-bold">${total.toFixed(2)}</span>
           </div>
           <button
+            onClick={handleCheckout}
             className="w-full py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
           >
             Checkout
