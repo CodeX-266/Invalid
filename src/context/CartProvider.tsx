@@ -15,7 +15,7 @@ interface CartContextType {
   addToCart: (item: Omit<CartItem, "quantity">) => void;
   removeFromCart: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
-  clearCart: () => void; // ✅ NEW
+  clearCart: () => void; // ✅ added
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -46,7 +46,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  const clearCart = () => setCartItems([]); // ✅ NEW
+  const clearCart = () => {
+    setCartItems([]); // ✅ implemented
+  };
 
   return (
     <CartContext.Provider
@@ -55,7 +57,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         addToCart,
         removeFromCart,
         updateQuantity,
-        clearCart, // ✅ NEW
+        clearCart, // ✅ now part of provider
       }}
     >
       {children}
@@ -71,7 +73,7 @@ export const useCart = () => {
       addToCart: () => {},
       removeFromCart: () => {},
       updateQuantity: () => {},
-      clearCart: () => {},
+      clearCart: () => {}, // ✅ fallback
     };
   }
   return context;

@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { useCart } from "@/context/CartProvider";
 import { useAuth } from "@/context/AuthProvider";
-import { placeOrder } from "@/lib/firestore"; // 🔥 Import Firestore order function
-import { toast } from "react-hot-toast"; // optional for nice notifications
+import { placeOrder } from "@/lib/firestore";
+import { toast } from "react-hot-toast";
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -13,26 +13,27 @@ interface CartSidebarProps {
 }
 
 export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
-  const { cartItems = [], removeFromCart, updateQuantity } = useCart();
+  const { cartItems = [], removeFromCart, updateQuantity, clearCart } = useCart(); // ✅ added clearCart
   const { user } = useAuth();
 
   const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const handleCheckout = async () => {
-  if (!user) {
-    alert("You must be signed in to place an order!");
-    return;
-  }
+    if (!user) {
+      toast.error("You must be signed in to place an order!");
+      return;
+    }
 
-  try {
-    const orderId = await placeOrder(user.uid, cartItems, total);
-    alert(`Order placed successfully! Order ID: ${orderId}`);
-    clearCart(); // function to empty cart
-  } catch (err) {
-    console.error(err);
-    alert("Failed to place order. Please try again.");
-  }
-};
+    try {
+      const orderId = await placeOrder(user.uid, cartItems, total);
+      clearCart(); // ✅ clears cart after order
+      toast.success(`Order placed successfully! Order ID: ${orderId}`);
+      onClose(); // close sidebar
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to place order. Please try again.");
+    }
+  };
 
   return (
     <>
@@ -54,7 +55,9 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-700">
           <h2 className="text-2xl font-bold text-white">Your Cart</h2>
-          <button onClick={onClose} className="text-white text-2xl hover:text-gray-400">✕</button>
+          <button onClick={onClose} className="text-white text-2xl hover:text-gray-400">
+            ✕
+          </button>
         </div>
 
         {/* Items */}
@@ -107,7 +110,8 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           </div>
           <button
             onClick={handleCheckout}
-            className="w-full py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
+            disabled={cartItems.length === 0}
+            className="w-full py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold rounded-lg shadow-lg hover:scale-105 transition-transform duration-300 disabled:opacity-50"
           >
             Checkout
           </button>
