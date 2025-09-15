@@ -33,10 +33,15 @@ interface Order {
   items: CartItem[];
   total: number;
   status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
-  createdAt: Timestamp; // Correctly typed
+  createdAt: Timestamp;
 }
 
-export default function MyOrders({ onClose }: { onClose?: () => void }) {
+interface MyOrdersProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function MyOrders({ isOpen, onClose }: MyOrdersProps) {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +50,7 @@ export default function MyOrders({ onClose }: { onClose?: () => void }) {
 
   useEffect(() => {
     if (!user) return;
+
     const fetchOrders = async () => {
       setLoading(true);
       try {
@@ -89,27 +95,24 @@ export default function MyOrders({ onClose }: { onClose?: () => void }) {
 
   return (
     <>
-      {/* Blurred backdrop */}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={onClose}></div>
+      {/* Backdrop */}
+      {isOpen && <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={onClose}></div>}
 
-      <div className="fixed inset-0 overflow-y-auto z-50 flex justify-center items-start pt-10 px-4">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-gray-900 rounded-xl shadow-2xl w-full max-w-5xl p-6 relative"
-        >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-300 hover:text-white text-2xl"
-          >
-            ✕
-          </button>
+      {/* Sliding Panel */}
+      <motion.div
+        className="fixed top-0 right-0 h-full z-50 flex flex-col w-full sm:w-80 md:w-96 lg:w-[40%] bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 shadow-2xl"
+        initial={{ x: "100%" }}
+        animate={{ x: isOpen ? 0 : "100%" }}
+        transition={{ type: "tween", duration: 0.3 }}
+      >
+        <div className="flex justify-between items-center p-6 border-b border-gray-700">
+          <h2 className="text-2xl font-bold text-white">My Orders</h2>
+          <button onClick={onClose} className="text-white text-2xl hover:text-gray-400">✕</button>
+        </div>
 
-          <h1 className="text-3xl font-bold text-white mb-6">My Orders</h1>
-
+        <div className="flex-1 p-6 overflow-y-auto">
           {/* Filters */}
-          <div className="flex gap-2 mb-6 flex-wrap">
+          <div className="flex gap-2 mb-4 flex-wrap">
             {["all","pending","confirmed","shipped","delivered","cancelled"].map(f => (
               <button
                 key={f}
@@ -126,9 +129,8 @@ export default function MyOrders({ onClose }: { onClose?: () => void }) {
 
           {/* Order List */}
           {!loading && !selectedOrder && (
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-4">
               {filteredOrders.length === 0 && <p className="text-gray-400 text-center mt-10">No orders found.</p>}
-
               {filteredOrders.map(order => (
                 <motion.div
                   key={order.id}
@@ -182,7 +184,7 @@ export default function MyOrders({ onClose }: { onClose?: () => void }) {
               </div>
 
               {/* Items */}
-              <div className="space-y-2 mb-4 max-h-96 overflow-y-auto">
+              <div className="space-y-2 mb-4">
                 {selectedOrder.items.map(item => (
                   <div key={item.id} className="flex items-center space-x-4 bg-gray-800 p-3 rounded">
                     <Image src={item.image} alt={item.name} width={60} height={60} className="rounded" />
@@ -211,8 +213,8 @@ export default function MyOrders({ onClose }: { onClose?: () => void }) {
               )}
             </div>
           )}
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </>
   );
 }

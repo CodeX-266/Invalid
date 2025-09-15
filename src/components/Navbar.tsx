@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import AboutModal from "@/components/AboutModal";
 import ContactModal from "@/components/ContactModal";
-import MyOrders from "@/components/MyOrders"; // ✅ import your MyOrders component
+import MyOrders from "@/components/MyOrders"; // ✅ import MyOrders
 
 interface NavbarProps {
   onCartClick?: () => void;
@@ -20,7 +20,7 @@ export default function Navbar({ onCartClick, onAuthClick }: NavbarProps) {
 
   const [showAbout, setShowAbout] = useState(false);
   const [showContact, setShowContact] = useState(false);
-  const [showOrders, setShowOrders] = useState(false); // ✅ new state for MyOrders
+  const [showOrders, setShowOrders] = useState(false); // ✅ state for MyOrders
 
   return (
     <>
@@ -93,7 +93,9 @@ export default function Navbar({ onCartClick, onAuthClick }: NavbarProps) {
       {/* Optional Modals */}
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
       {showContact && <ContactModal onClose={() => setShowContact(false)} />}
-      {showOrders && <MyOrders onClose={() => setShowOrders(false)} />} {/* ✅ Render MyOrders */}
+      
+      {/* My Orders Modal */}
+      <MyOrders isOpen={showOrders} onClose={() => setShowOrders(false)} />
     </>
   );
 }
