@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import AboutModal from "@/components/AboutModal";
 import ContactModal from "@/components/ContactModal";
+import MyOrders from "@/components/MyOrders"; // ✅ import your MyOrders component
 
 interface NavbarProps {
   onCartClick?: () => void;
@@ -19,6 +20,7 @@ export default function Navbar({ onCartClick, onAuthClick }: NavbarProps) {
 
   const [showAbout, setShowAbout] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showOrders, setShowOrders] = useState(false); // ✅ new state for MyOrders
 
   return (
     <>
@@ -32,7 +34,7 @@ export default function Navbar({ onCartClick, onAuthClick }: NavbarProps) {
         </Link>
 
         {/* Nav Links + Cart + Sign In/User */}
-        <div className="hidden md:flex items-center space-x-6 text-white font-semibold">
+        <div className="hidden md:flex items-center space-x-4 text-white font-semibold">
           <button
             onClick={() => setShowAbout(true)}
             className="hover:text-indigo-400 transition-all duration-300 ease-in-out transform hover:scale-105"
@@ -60,18 +62,27 @@ export default function Navbar({ onCartClick, onAuthClick }: NavbarProps) {
             )}
           </button>
 
-          {/* Sign In / User */}
+          {/* Sign In / User + My Orders */}
           {user ? (
-            <span
-              onClick={onAuthClick}
-              className="px-4 py-2 text-base font-semibold text-white bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg shadow-lg hover:scale-105 transition-transform cursor-pointer"
-            >
-              {user.displayName || user.email || user.phoneNumber}
-            </span>
+            <>
+              <span
+                onClick={onAuthClick}
+                className="px-4 py-2 text-base font-semibold text-white bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg shadow-lg hover:scale-105 transition-transform cursor-pointer"
+              >
+                {user.displayName || user.email || user.phoneNumber}
+              </span>
+
+              <button
+                onClick={() => setShowOrders(true)}
+                className="px-4 py-2 text-base font-semibold text-white bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg shadow-lg hover:scale-105 transition-transform"
+              >
+                My Orders
+              </button>
+            </>
           ) : (
             <button
               onClick={onAuthClick}
-              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded hover:bg-indigo-500 transition"
+              className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg shadow-lg hover:scale-105 transition-transform"
             >
               Sign In
             </button>
@@ -82,6 +93,7 @@ export default function Navbar({ onCartClick, onAuthClick }: NavbarProps) {
       {/* Optional Modals */}
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
       {showContact && <ContactModal onClose={() => setShowContact(false)} />}
+      {showOrders && <MyOrders onClose={() => setShowOrders(false)} />} {/* ✅ Render MyOrders */}
     </>
   );
 }
