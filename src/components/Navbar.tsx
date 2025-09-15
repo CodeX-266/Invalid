@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartProvider";
 import { useAuth } from "@/context/AuthProvider";
-import CartModal from "@/components/CartModal";
-import AuthModal from "@/components/AuthModal";
+import Link from "next/link";
+import Image from "next/image";
 import AboutModal from "@/components/AboutModal";
 import ContactModal from "@/components/ContactModal";
 
@@ -14,7 +14,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onCartClick, onAuthClick }: NavbarProps) {
-  const { cartItems = [] } = useCart(); // Ensure cartItems is an array
+  const { cartItems = [] } = useCart();
   const { user } = useAuth();
 
   const [showAbout, setShowAbout] = useState(false);
@@ -24,17 +24,14 @@ export default function Navbar({ onCartClick, onAuthClick }: NavbarProps) {
     <>
       <nav className="absolute top-5 left-0 w-full flex justify-between items-center px-6 py-2 z-50 bg-transparent">
         {/* Logo */}
-        <a
-          href="/"
-          className="flex items-center space-x-3 cursor-pointer hover:scale-105 transition-transform"
-        >
-          <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
+        <Link href="/" className="flex items-center space-x-3 cursor-pointer hover:scale-105 transition-transform">
+          <Image src="/logo.png" alt="Logo" width={40} height={40} />
           <span className="text-white text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             INVALID
           </span>
-        </a>
+        </Link>
 
-        {/* Nav Links + Cart + Sign In */}
+        {/* Nav Links + Cart + Sign In/User */}
         <div className="hidden md:flex items-center space-x-6 text-white font-semibold">
           <button
             onClick={() => setShowAbout(true)}
@@ -65,7 +62,10 @@ export default function Navbar({ onCartClick, onAuthClick }: NavbarProps) {
 
           {/* Sign In / User */}
           {user ? (
-            <span className="px-4 py-2 text-base font-semibold text-white bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg shadow-lg hover:scale-105 transition-transform cursor-pointer">
+            <span
+              onClick={onAuthClick}
+              className="px-4 py-2 text-base font-semibold text-white bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg shadow-lg hover:scale-105 transition-transform cursor-pointer"
+            >
               {user.displayName || user.email || user.phoneNumber}
             </span>
           ) : (

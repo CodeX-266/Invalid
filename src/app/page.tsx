@@ -13,14 +13,16 @@ export default function HomePage() {
 
   return (
     <div className="relative w-full h-full">
-      {/* Hero Section (includes Navbar internally) */}
+      {/* Hero Section with internal Navbar */}
       <HeroShop
         onCartClick={() => setShowCart(true)}
         onAuthClick={() => setShowAuthModal(true)}
       />
 
-      {/* Modals */}
+      {/* Auth Modal */}
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+
+      {/* Cart Sidebar */}
       <CartSidebar isOpen={showCart} onClose={() => setShowCart(false)} />
     </div>
   );
