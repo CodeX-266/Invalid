@@ -4,11 +4,12 @@ import { motion } from "framer-motion";
 import { useState, useEffect, ReactNode } from "react";
 import { Typewriter } from "react-simple-typewriter";
 import Navbar from "@/components/Navbar";
-import Image from "next/image";
 import { useCart } from "@/context/CartProvider";
 
 interface HeroShopProps {
-  children?: ReactNode; // Optional: for top-right controls like cart/login
+  children?: ReactNode;
+  onCartClick?: () => void;
+  onAuthClick?: () => void;
 }
 
 const images = [
@@ -18,15 +19,15 @@ const images = [
 ];
 
 const products = [
-  { id: 1, name: "Classic Jacket", price: "$120", image: "/images/product1.webp" },
-  { id: 2, name: "Elegant Shirt", price: "$80", image: "/images/product2.webp" },
-  { id: 3, name: "Stylish Pants", price: "$90", image: "/images/product3.webp" },
-  { id: 4, name: "Trendy Sneakers", price: "$110", image: "/images/product4.webp" },
-  { id: 5, name: "Classic Jacket", price: "$120", image: "/images/product5.jpg" },
-  { id: 6, name: "Classic Jacket", price: "$120", image: "/images/product6.webp" },
+  { id: 1, name: "Classic Jacket", price: 120, image: "/images/product1.webp" },
+  { id: 2, name: "Elegant Shirt", price: 80, image: "/images/product2.webp" },
+  { id: 3, name: "Stylish Pants", price: 90, image: "/images/product3.webp" },
+  { id: 4, name: "Trendy Sneakers", price: 110, image: "/images/product4.webp" },
+  { id: 5, name: "Classic Jacket", price: 120, image: "/images/product5.jpg" },
+  { id: 6, name: "Classic Jacket", price: 120, image: "/images/product6.webp" },
 ];
 
-export default function HeroShop({ children }: HeroShopProps) {
+export default function HeroShop({ children, onCartClick, onAuthClick }: HeroShopProps) {
   const [index, setIndex] = useState(0);
   const [slice, setSlice] = useState(false);
   const [showValid, setShowValid] = useState(false);
@@ -65,23 +66,19 @@ export default function HeroShop({ children }: HeroShopProps) {
         <motion.div
           key={index}
           className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{ backgroundImage: `url(${images[index]})` }}
           initial={{ x: "100%" }}
           animate={{ x: "0%" }}
           exit={{ x: "-100%" }}
           transition={{ duration: 2 }}
-        >
-          <Image
-            src={images[index]}
-            alt={`Hero ${index + 1}`}
-            fill
-            className="object-cover"
-            priority
-          />
-        </motion.div>
+        />
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
-        {/* Navbar */}
-        <Navbar />
+        {/* Navbar (internal) */}
+        <Navbar 
+          onCartClick={onCartClick} 
+          onAuthClick={onAuthClick} 
+        />
 
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between w-full h-full px-8 md:px-16">
@@ -175,15 +172,15 @@ export default function HeroShop({ children }: HeroShopProps) {
         transition={{ duration: 0.8, ease: "easeInOut" }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 overflow-hidden">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-gray-700 rounded-full opacity-20 animate-pulse mix-blend-overlay" />
-          <div className="absolute bottom-0 right-0 w-80 h-80 bg-gray-600 rounded-full opacity-20 animate-pulse mix-blend-overlay" />
+          <div className="absolute top-0 left-0 w-96 h-96 bg-gray-700 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-gray-600 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
         </div>
 
         <div
           className="fixed top-5 left-0 w-full flex justify-start items-center px-6 py-2 z-30 cursor-pointer"
           onClick={handleBack}
         >
-          <Image src="/logo.png" alt="Logo" width={40} height={40} />
+          <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
           <span className="text-white text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent ml-3">
             INVALID
           </span>
@@ -198,16 +195,14 @@ export default function HeroShop({ children }: HeroShopProps) {
                 className="relative bg-gray-800 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300 shadow-xl"
                 whileHover={{ y: -10 }}
               >
-                <Image
+                <img
                   src={product.image}
                   alt={product.name}
-                  width={400}
-                  height={400}
                   className="w-full h-72 object-cover"
                 />
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
-                  <p className="text-lg font-bold">{product.price}</p>
+                  <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
                 </div>
                 <motion.div
                   className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0"
@@ -220,7 +215,7 @@ export default function HeroShop({ children }: HeroShopProps) {
                       addToCart({
                         id: product.id,
                         name: product.name,
-                        price: parseFloat(product.price.replace(/[^0-9.-]+/g, "")),
+                        price: product.price,
                         image: product.image,
                       })
                     }
@@ -233,9 +228,6 @@ export default function HeroShop({ children }: HeroShopProps) {
           </div>
         </div>
       </motion.section>
-
-      {/* Optional: render children if provided */}
-      {children && <div className="absolute top-0 right-0 z-50">{children}</div>}
     </div>
   );
 }
