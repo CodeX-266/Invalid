@@ -11,7 +11,7 @@ import AboutModal from "@/components/AboutModal";
 import ContactModal from "@/components/ContactModal";
 
 export default function Navbar() {
-  const { cart = [] } = useCart(); // Ensure cart is an array
+  const { cartItems = [] } = useCart(); // ✅ corrected property
   const { user } = useAuth();
 
   const [showCart, setShowCart] = useState(false);
@@ -52,9 +52,9 @@ export default function Navbar() {
             aria-label="View Cart"
           >
             🛒
-            {cart.length > 0 && (
+            {cartItems.length > 0 && (
               <span className="absolute -top-1 -right-1 text-xs bg-red-600 text-white px-1.5 py-0.5 rounded-full">
-                {cart.length > 99 ? "99+" : cart.length}
+                {cartItems.length > 99 ? "99+" : cartItems.length}
               </span>
             )}
           </button>
