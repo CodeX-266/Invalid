@@ -4,10 +4,11 @@ import { motion } from "framer-motion";
 import { useState, useEffect, ReactNode } from "react";
 import { Typewriter } from "react-simple-typewriter";
 import Navbar from "@/components/Navbar";
-import { useCart } from "@/context/CartProvider"; // ✅ Cart hook
+import Image from "next/image";
+import { useCart } from "@/context/CartProvider";
 
 interface HeroShopProps {
-  children?: ReactNode;
+  children?: ReactNode; // Optional: for top-right controls like cart/login
 }
 
 const images = [
@@ -31,7 +32,7 @@ export default function HeroShop({ children }: HeroShopProps) {
   const [showValid, setShowValid] = useState(false);
   const [showShop, setShowShop] = useState(false);
 
-  const { addToCart } = useCart(); // ✅ Cart hook
+  const { addToCart } = useCart();
 
   // Slide images every 10s
   useEffect(() => {
@@ -64,12 +65,19 @@ export default function HeroShop({ children }: HeroShopProps) {
         <motion.div
           key={index}
           className="absolute inset-0 w-full h-full bg-cover bg-center"
-          style={{ backgroundImage: `url(${images[index]})` }}
           initial={{ x: "100%" }}
           animate={{ x: "0%" }}
           exit={{ x: "-100%" }}
           transition={{ duration: 2 }}
-        />
+        >
+          <Image
+            src={images[index]}
+            alt={`Hero ${index + 1}`}
+            fill
+            className="object-cover"
+            priority
+          />
+        </motion.div>
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
         {/* Navbar */}
@@ -167,22 +175,20 @@ export default function HeroShop({ children }: HeroShopProps) {
         transition={{ duration: 0.8, ease: "easeInOut" }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 overflow-hidden">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-gray-700 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
-          <div className="absolute bottom-0 right-0 w-80 h-80 bg-gray-600 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
+          <div className="absolute top-0 left-0 w-96 h-96 bg-gray-700 rounded-full opacity-20 animate-pulse mix-blend-overlay" />
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-gray-600 rounded-full opacity-20 animate-pulse mix-blend-overlay" />
         </div>
 
-        {/* Back Button */}
         <div
           className="fixed top-5 left-0 w-full flex justify-start items-center px-6 py-2 z-30 cursor-pointer"
           onClick={handleBack}
         >
-          <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
+          <Image src="/logo.png" alt="Logo" width={40} height={40} />
           <span className="text-white text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent ml-3">
             INVALID
           </span>
         </div>
 
-        {/* Products */}
         <div className="relative max-w-7xl mx-auto px-6 md:px-16 py-24 text-white z-10">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Our Collection</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
@@ -192,9 +198,11 @@ export default function HeroShop({ children }: HeroShopProps) {
                 className="relative bg-gray-800 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300 shadow-xl"
                 whileHover={{ y: -10 }}
               >
-                <img
+                <Image
                   src={product.image}
                   alt={product.name}
+                  width={400}
+                  height={400}
                   className="w-full h-72 object-cover"
                 />
                 <div className="p-6">
@@ -206,8 +214,8 @@ export default function HeroShop({ children }: HeroShopProps) {
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {/* ✅ Add to Cart button */}
                   <button
+                    className="px-6 py-3 bg-gray-700 rounded-full font-semibold hover:bg-gray-600 transition"
                     onClick={() =>
                       addToCart({
                         id: product.id,
@@ -216,7 +224,6 @@ export default function HeroShop({ children }: HeroShopProps) {
                         image: product.image,
                       })
                     }
-                    className="px-6 py-3 bg-gray-700 rounded-full font-semibold hover:bg-gray-600 transition"
                   >
                     Add to Cart
                   </button>
@@ -226,6 +233,9 @@ export default function HeroShop({ children }: HeroShopProps) {
           </div>
         </div>
       </motion.section>
+
+      {/* Optional: render children if provided */}
+      {children && <div className="absolute top-0 right-0 z-50">{children}</div>}
     </div>
   );
 }

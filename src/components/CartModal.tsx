@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useCart } from "@/context/CartProvider";
 
 interface CartSidebarProps {
@@ -9,9 +10,9 @@ interface CartSidebarProps {
 }
 
 export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
-  const { cartItems = [], removeFromCart, updateQuantity } = useCart(); // default empty array
+  const { cartItems = [], removeFromCart, updateQuantity } = useCart();
 
-  const total = cartItems?.reduce((acc, item) => acc + item.price * item.quantity, 0) || 0;
+  const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
     <>
@@ -44,7 +45,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
           {cartItems.map((item) => (
             <div key={item.id} className="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition">
-              <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded" />
+              <Image src={item.image} alt={item.name} width={80} height={80} className="rounded" />
               <div className="flex-1">
                 <h3 className="text-white font-semibold">{item.name}</h3>
                 <p className="text-gray-300 font-bold">${item.price.toFixed(2)}</p>

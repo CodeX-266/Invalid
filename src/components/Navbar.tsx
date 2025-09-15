@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import { useCart } from "@/context/CartProvider";
 import { useAuth } from "@/context/AuthProvider";
 import CartModal from "@/components/CartModal";
@@ -21,15 +23,12 @@ export default function Navbar() {
     <>
       <nav className="absolute top-5 left-0 w-full flex justify-between items-center px-6 py-2 z-50 bg-transparent">
         {/* Logo */}
-        <a
-          href="/"
-          className="flex items-center space-x-3 cursor-pointer hover:scale-105 transition-transform"
-        >
-          <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
+        <Link href="/" className="flex items-center space-x-3 cursor-pointer hover:scale-105 transition-transform">
+          <Image src="/logo.png" alt="Logo" width={40} height={40} />
           <span className="text-white text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             INVALID
           </span>
-        </a>
+        </Link>
 
         {/* Nav Links + Cart + Sign In/User */}
         <div className="hidden md:flex items-center space-x-6 text-white font-semibold">
