@@ -4,6 +4,7 @@ import { useState } from "react";
 import HeroShop from "@/components/Hero";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthProvider";
+import { Analytics } from "@vercel/analytics/next"
 
 // ⬇️ Add this line to disable prerendering issues with Firebase
 export const dynamic = "force-dynamic";

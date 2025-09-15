@@ -11,6 +11,7 @@
   "dependencies": {
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.3.0",
+    "@vercel/analytics": "^1.5.0",
     "firebase": "^12.2.1",
     "framer-motion": "^12.23.12",
     "lottie-react": "^2.4.1",
