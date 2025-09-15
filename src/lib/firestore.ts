@@ -18,7 +18,7 @@ export interface Order {
   items: CartItem[];
   total: number;
   status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
-  createdAt: any;
+  createdAt: Timestamp; // ✅ changed from any to Timestamp
 }
 
 /**
@@ -42,7 +42,7 @@ export const placeOrder = async (
     items,
     total,
     status: "pending", // default status
-    createdAt: Timestamp.now(),
+    createdAt: Timestamp.now(), // ✅ proper type
   };
 
   const docRef = await addDoc(ordersRef, newOrder);
