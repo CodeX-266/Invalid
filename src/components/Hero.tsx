@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { Typewriter } from "react-simple-typewriter";
 import Navbar from "@/components/Navbar";
 import { useCart } from "@/context/CartProvider";
+import toast, { Toaster } from "react-hot-toast";
 
 interface HeroShopProps {
   onCartClick?: () => void;
@@ -26,7 +27,6 @@ const products = [
   { id: 6, name: "Classic Jacket", price: "$120", image: "/images/product6.webp" },
   { id: 7, name: "Classic Jacket", price: "$120", image: "/images/product1.webp" },
   { id: 8, name: "Elegant Shirt", price: "$80", image: "/images/product2.webp" },
-  
 ];
 
 export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
@@ -37,7 +37,7 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
 
   const { addToCart } = useCart();
 
-  const shopRef = useRef<HTMLDivElement>(null); // For Home button scrolling
+  const shopRef = useRef<HTMLDivElement>(null);
 
   // Slide images every 10s
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
   const handleBack = () => setShowShop(false);
 
   const handleHomeClick = () => {
-    setShowShop(false); // Slide back to hero
+    setShowShop(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -173,12 +173,11 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
       {/* Shop Section */}
       <motion.section
         ref={shopRef}
-        className="absolute inset-0 z-20 overflow-y-auto scrollbar-hide" // hide scrollbar
+        className="absolute inset-0 z-20 overflow-y-auto scrollbar-hide"
         initial={{ y: "100%" }}
         animate={{ y: showShop ? 0 : "100%" }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
       >
-
         {/* Full height background */}
         <div className="absolute top-0 left-0 w-full min-h-[200vh] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-gray-700 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
@@ -228,14 +227,15 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
                 >
                   <button
                     className="px-6 py-3 bg-gray-700 rounded-full font-semibold hover:bg-gray-600 transition"
-                    onClick={() =>
+                    onClick={() => {
                       addToCart({
                         id: product.id,
                         name: product.name,
                         price: parseFloat(product.price.replace("$", "")),
                         image: product.image,
-                      })
-                    }
+                      });
+                      toast.success("Added to cart");
+                    }}
                   >
                     Add to Cart
                   </button>
@@ -245,6 +245,9 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
           </div>
         </div>
       </motion.section>
+
+      {/* Hot Toast container */}
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 }
