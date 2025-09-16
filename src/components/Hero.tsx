@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from "react";
 import { Typewriter } from "react-simple-typewriter";
 import Navbar from "@/components/Navbar";
 import { useCart } from "@/context/CartProvider";
-import toast, { Toaster } from "react-hot-toast";
 
 interface HeroShopProps {
   onCartClick?: () => void;
@@ -41,7 +40,10 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
 
   // Slide images every 10s
   useEffect(() => {
-    const interval = setInterval(() => setIndex((prev) => (prev + 1) % images.length), 10000);
+    const interval = setInterval(
+      () => setIndex((prev) => (prev + 1) % images.length),
+      10000
+    );
     return () => clearInterval(interval);
   }, []);
 
@@ -104,7 +106,8 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
               </span>
             </h1>
             <p className="text-lg md:text-xl font-semibold text-white/90 max-w-lg">
-              Premium clothing blending comfort and elegance. Crafted to match your everyday energy.
+              Premium clothing blending comfort and elegance. Crafted to match
+              your everyday energy.
             </p>
             <div className="flex space-x-4 pt-4">
               <motion.button
@@ -123,9 +126,10 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
             </div>
           </div>
 
+          {/* ✅ VALID text - responsive fix */}
           <div className="mt-12 md:mt-0 w-full h-[700px] relative flex items-center justify-end overflow-hidden">
             <div className="relative">
-              <div className="flex text-white text-[12rem] md:text-[14rem] relative">
+              <div className="flex text-white text-[5rem] sm:text-[8rem] md:text-[12rem] lg:text-[14rem] relative leading-none">
                 {!showValid && (
                   <>
                     <motion.span
@@ -151,7 +155,11 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
                     key={i}
                     initial={{ opacity: showValid ? 0 : 1 }}
                     animate={{ opacity: showValid ? 1 : 1 }}
-                    transition={{ duration: 0.6, ease: "easeInOut", delay: 0.2 }}
+                    transition={{
+                      duration: 0.6,
+                      ease: "easeInOut",
+                      delay: 0.2,
+                    }}
                     className="font-thin tracking-wide"
                   >
                     {letter}
@@ -163,7 +171,11 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
                 className="absolute h-2 bg-white top-1/2 w-full -translate-y-1/2 rounded-full shadow-[0_0_15px_rgba(255,255,255,0.7)]"
                 initial={{ scaleX: 0, opacity: 1 }}
                 animate={{ scaleX: slice ? 1 : 0, opacity: slice ? 1 : 0 }}
-                transition={{ duration: 0.6, ease: "easeInOut", delay: slice ? 0 : 0.4 }}
+                transition={{
+                  duration: 0.6,
+                  ease: "easeInOut",
+                  delay: slice ? 0 : 0.4,
+                }}
               />
             </div>
           </div>
@@ -184,7 +196,7 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
           <div className="absolute bottom-0 right-0 w-80 h-80 bg-gray-600 rounded-full opacity-20 animate-pulse mix-blend-overlay"></div>
         </div>
 
-        {/* Top bar: logo + home button */}
+        {/* Top bar */}
         <div className="fixed top-5 left-0 w-full flex justify-between items-center px-6 py-2 z-30">
           <div className="flex items-center cursor-pointer" onClick={handleBack}>
             <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
@@ -193,7 +205,6 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
             </span>
           </div>
 
-          {/* Home Button */}
           <button
             onClick={handleHomeClick}
             className="px-6 py-2 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold shadow-lg hover:scale-105 transition-transform"
@@ -203,7 +214,9 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 md:px-16 py-24 text-white z-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Our Collection</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">
+            Our Collection
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {products.map((product) => (
               <motion.div
@@ -227,15 +240,14 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
                 >
                   <button
                     className="px-6 py-3 bg-gray-700 rounded-full font-semibold hover:bg-gray-600 transition"
-                    onClick={() => {
+                    onClick={() =>
                       addToCart({
                         id: product.id,
                         name: product.name,
                         price: parseFloat(product.price.replace("$", "")),
                         image: product.image,
-                      });
-                      toast.success("Added to cart");
-                    }}
+                      })
+                    }
                   >
                     Add to Cart
                   </button>
@@ -245,9 +257,6 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
           </div>
         </div>
       </motion.section>
-
-      {/* Hot Toast container */}
-      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 }
