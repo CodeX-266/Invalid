@@ -120,8 +120,12 @@ const InteractiveTshirt = ({
 const BasicEditor = () => {
   const [objects, setObjects] = useState<DesignObject[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [canvasTexture, setCanvasTexture] = useState<THREE.CanvasTexture | null>(null);
 
-  const [canvasTexture] = useState(() => {
+  const controlsRef = useRef<any>(null);
+
+  // Create canvas only on client
+  useEffect(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 2048;
     canvas.height = 2048;
@@ -130,24 +134,29 @@ const BasicEditor = () => {
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    return new THREE.CanvasTexture(canvas);
-  });
+    const texture = new THREE.CanvasTexture(canvas);
+    setCanvasTexture(texture);
+  }, []);
 
-  const controlsRef = useRef<any>(null);
-
+  // Redraw texture when objects change
   useEffect(() => {
-    const ctx = canvasTexture.image.getContext("2d");
+    if (!canvasTexture) return;
+
+    const image = canvasTexture.image as HTMLCanvasElement | undefined;
+    if (!image) return;
+
+    const ctx = image.getContext("2d");
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvasTexture.image.width, canvasTexture.image.height);
+    ctx.clearRect(0, 0, image.width, image.height);
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvasTexture.image.width, canvasTexture.image.height);
+    ctx.fillRect(0, 0, image.width, image.height);
 
     objects.forEach((obj) => {
-      if (!obj.uv) return;
+      if (!obj?.uv) return; // extra guard
 
-      const x = obj.uv.x * canvasTexture.image.width;
-      const y = (1 - obj.uv.y) * canvasTexture.image.height;
+      const x = obj.uv.x * image.width;
+      const y = (1 - obj.uv.y) * image.height;
 
       ctx.save();
       ctx.translate(x, y);
@@ -275,13 +284,15 @@ const BasicEditor = () => {
             <ambientLight intensity={0.5} />
             <directionalLight position={[0, 2, 2]} intensity={0.8} />
             <Suspense fallback={null}>
-              <InteractiveTshirt
-                objects={objects}
-                setObjects={setObjects}
-                texture={canvasTexture}
-                controlsRef={controlsRef}
-                setSelectedIndex={setSelectedIndex}
-              />
+              {canvasTexture && (
+                <InteractiveTshirt
+                  objects={objects}
+                  setObjects={setObjects}
+                  texture={canvasTexture}
+                  controlsRef={controlsRef}
+                  setSelectedIndex={setSelectedIndex}
+                />
+              )}
             </Suspense>
             <OrbitControls ref={controlsRef} enablePan={false} enableZoom={true} />
           </Canvas>
