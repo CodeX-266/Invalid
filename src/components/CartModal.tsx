@@ -21,38 +21,9 @@ interface Address {
   country: string;
 }
 
-// Razorpay options type
-interface RazorpayOptions {
-  key: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  order_id: string;
-  handler: () => void;
-  modal: {
-    ondismiss: () => void;
-  };
-  prefill: {
-    name: string;
-    email: string;
-    contact: string;
-  };
-  theme: {
-    color: string;
-  };
-}
-
-// Extend window interface for Razorpay
-declare global {
-  interface Window {
-    Razorpay: new (options: RazorpayOptions) => { open: () => void };
-  }
-}
-
 export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
   const { cartItems = [], removeFromCart, updateQuantity, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user } = useAuth(); // type inferred from context
 
   const [step, setStep] = useState<number>(0);
   const [name, setName] = useState<string>(user?.displayName || "");
@@ -79,16 +50,12 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
     !!address.pincode &&
     !!address.country;
 
-  // Load Razorpay script only on client
+  // Load Razorpay script once
   useEffect(() => {
-    if (typeof window === "undefined") return;
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
   }, []);
 
   const handleRazorpayPayment = async (): Promise<void> => {
@@ -108,8 +75,8 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
 
       const order: { id: string; amount: number; currency: string } = await res.json();
 
-      const options: RazorpayOptions = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
+      const options: any = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
         name: "INVALID Lifestyle",
@@ -148,11 +115,9 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
         theme: { color: "#7e22ce" },
       };
 
-      if (typeof window !== "undefined") {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-        setIsPlacingOrder(true);
-      }
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+      setIsPlacingOrder(true);
     } catch (err) {
       console.error(err);
       setIsPlacingOrder(false);
@@ -162,7 +127,12 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
 
   return (
     <>
-      {isOpen && <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity" onClick={onClose} />}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+          onClick={onClose}
+        />
+      )}
 
       <motion.div
         className="fixed top-0 right-0 h-full z-50 w-full sm:w-80 md:w-96 lg:w-[35%] flex flex-col shadow-2xl bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 border-l border-gray-700"
@@ -185,7 +155,10 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
                 <p className="text-gray-400 text-center mt-20">Your cart is empty</p>
               ) : (
                 cartItems.map((item: CartItem) => (
-                  <div key={item.id} className="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition">
+                  <div
+                    key={item.id}
+                    className="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition"
+                  >
                     <Image src={item.image} alt={item.name} width={80} height={80} className="rounded" />
                     <div className="flex-1">
                       <h3 className="text-white font-semibold">{item.name}</h3>
