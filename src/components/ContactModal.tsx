@@ -24,9 +24,9 @@ export default function ContactModal({ onClose }: ContactModalProps) {
         </p>
 
         <div className="mt-6 space-y-3 text-gray-400">
-          <p>📧 Email: support@invalid.com</p>
-          <p>📞 Phone: +91 98765 43210</p>
-          <p>📍 Location: Bengaluru, India</p>
+          <p>📧 Email: invalidlifestyle.global@gmail.com</p>
+          <p>📞 Phone: +91 80924 18238</p>
+          <p>📍 Location: Chennai, India</p>
         </div>
       </div>
     </div>
