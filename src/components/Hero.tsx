@@ -232,7 +232,7 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
                       addToCart({
                         id: product.id,
                         name: product.name,
-                        price: parseFloat(product.price.replace("$", "")),
+                        price: parseFloat(product.price.replace("₹", "")),
                         image: product.image,
                       });
                       toast.success("Added to your cart "); // ✅ Toast on add

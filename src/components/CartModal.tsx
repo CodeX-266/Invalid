@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useCart, CartItem } from "@/context/CartProvider";
+import { useCart } from "@/context/CartProvider";
 import { useAuth } from "@/context/AuthProvider";
 import { placeOrder } from "@/lib/firestore";
 import { toast } from "react-hot-toast";
@@ -13,22 +13,15 @@ interface CartSidebarProps {
   onClose: () => void;
 }
 
-interface Address {
-  street: string;
-  city: string;
-  state: string;
-  pincode: string;
-  country: string;
-}
-
 export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
   const { cartItems = [], removeFromCart, updateQuantity, clearCart } = useCart();
-  const { user } = useAuth(); // type inferred from context
+  const { user } = useAuth();
 
-  const [step, setStep] = useState<number>(0);
-  const [name, setName] = useState<string>(user?.displayName || "");
-  const [phone, setPhone] = useState<string>(user?.phoneNumber || "");
-  const [address, setAddress] = useState<Address>({
+  const [step, setStep] = useState(0);
+
+  const [name, setName] = useState(user?.displayName || "");
+  const [phone, setPhone] = useState(user?.phoneNumber || "");
+  const [address, setAddress] = useState({
     street: "",
     city: "",
     state: "",
@@ -36,19 +29,13 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
     country: "",
   });
 
-  const [isPlacingOrder, setIsPlacingOrder] = useState<boolean>(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  const total: number = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const canProceedToShipping: boolean = cartItems.length > 0;
-  const canProceedToReview: boolean =
-    !!name &&
-    !!phone &&
-    !!address.street &&
-    !!address.city &&
-    !!address.state &&
-    !!address.pincode &&
-    !!address.country;
+  const canProceedToShipping = cartItems.length > 0;
+  const canProceedToReview =
+    name && phone && address.street && address.city && address.state && address.pincode && address.country;
 
   // Load Razorpay script once
   useEffect(() => {
@@ -58,11 +45,14 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
     document.body.appendChild(script);
   }, []);
 
-  const handleRazorpayPayment = async (): Promise<void> => {
+  const handleRazorpayPayment = async () => {
     if (!user) {
       toast.error("Please sign in to proceed with payment.");
       return;
     }
+
+    setIsPlacingOrder(true);
+    const loadingToastId = toast.loading("Initiating payment...");
 
     try {
       const res = await fetch("/api/payment/order", {
@@ -71,41 +61,33 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
         body: JSON.stringify({ amount: total, currency: "INR" }),
       });
 
-      if (!res.ok) throw new Error("Failed to create order");
+      const order = await res.json();
 
-      const order: { id: string; amount: number; currency: string } = await res.json();
+      if (!res.ok) throw new Error(order.error || "Order creation failed");
 
-      const options: any = {
+      const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
         name: "INVALID Lifestyle",
         description: "Purchase",
         order_id: order.id,
-        handler: async function () {
-          setIsPlacingOrder(true);
-          const loadingToastId = toast.loading("Placing your order...");
-
+        handler: async function (response: any) {
+          const savingToastId = toast.loading("Saving your order...");
           try {
             const orderId = await placeOrder(user.uid, name, phone, address, cartItems, total);
             clearCart();
-            toast.dismiss(loadingToastId);
+            toast.dismiss(savingToastId);
             toast.success(`Payment & Order Successful! Order ID: ${orderId}`);
             onClose();
             setStep(0);
           } catch (err) {
             console.error(err);
-            toast.dismiss(loadingToastId);
+            toast.dismiss(savingToastId);
             toast.error("Failed to save order after payment.");
           } finally {
             setIsPlacingOrder(false);
           }
-        },
-        modal: {
-          ondismiss: () => {
-            setIsPlacingOrder(false);
-            toast.error("Payment cancelled.");
-          },
         },
         prefill: {
           name: name || "Customer",
@@ -117,11 +99,12 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
-      setIsPlacingOrder(true);
+      toast.dismiss(loadingToastId);
     } catch (err) {
       console.error(err);
-      setIsPlacingOrder(false);
+      toast.dismiss(loadingToastId);
       toast.error("Failed to initiate payment. Try again!");
+      setIsPlacingOrder(false);
     }
   };
 
@@ -154,7 +137,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
               {cartItems.length === 0 ? (
                 <p className="text-gray-400 text-center mt-20">Your cart is empty</p>
               ) : (
-                cartItems.map((item: CartItem) => (
+                cartItems.map((item) => (
                   <div
                     key={item.id}
                     className="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition"
@@ -296,7 +279,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
             <div className="space-y-4">
               <h3 className="text-white text-xl font-semibold">Review Your Cart</h3>
               <div className="space-y-2 max-h-80 overflow-y-auto">
-                {cartItems.map((item: CartItem) => (
+                {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4 bg-gray-800 p-3 rounded-lg">
                     <Image src={item.image} alt={item.name} width={60} height={60} className="rounded" />
                     <div className="flex-1 text-white">
