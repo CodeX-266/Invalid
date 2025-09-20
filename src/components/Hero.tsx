@@ -19,14 +19,14 @@ const images = [
 ];
 
 const products = [
-  { id: 1, name: "Classic Jacket", price: "$120", image: "/images/product1.webp" },
-  { id: 2, name: "Elegant Shirt", price: "$80", image: "/images/product2.webp" },
-  { id: 3, name: "Stylish Pants", price: "$90", image: "/images/product3.webp" },
-  { id: 4, name: "Trendy Sneakers", price: "$110", image: "/images/product4.webp" },
-  { id: 5, name: "Classic Jacket", price: "$120", image: "/images/product5.jpg" },
-  { id: 6, name: "Classic Jacket", price: "$120", image: "/images/product6.webp" },
-  { id: 7, name: "Classic Jacket", price: "$120", image: "/images/product1.webp" },
-  { id: 8, name: "Elegant Shirt", price: "$80", image: "/images/product2.webp" },
+  { id: 1, name: "Classic Jacket", price: "₹120", image: "/images/product1.webp" },
+  { id: 2, name: "Elegant Shirt", price: "₹80", image: "/images/product2.webp" },
+  { id: 3, name: "Stylish Pants", price: "₹90", image: "/images/product3.webp" },
+  { id: 4, name: "Trendy Sneakers", price: "₹110", image: "/images/product4.webp" },
+  { id: 5, name: "Classic Jacket", price: "₹120", image: "/images/product5.jpg" },
+  { id: 6, name: "Classic Jacket", price: "₹120", image: "/images/product6.webp" },
+  { id: 7, name: "Classic Jacket", price: "₹120", image: "/images/product1.webp" },
+  { id: 8, name: "Elegant Shirt", price: "₹80", image: "/images/product2.webp" },
 ];
 
 export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
