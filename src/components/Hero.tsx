@@ -6,6 +6,7 @@ import { Typewriter } from "react-simple-typewriter";
 import Navbar from "@/components/Navbar";
 import { useCart } from "@/context/CartProvider";
 import toast, { Toaster } from "react-hot-toast";
+import BasicEditor from "@/components/DesignEditor";
 
 interface HeroShopProps {
   onCartClick?: () => void;
@@ -34,9 +35,9 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
   const [slice, setSlice] = useState(false);
   const [showValid, setShowValid] = useState(false);
   const [showShop, setShowShop] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
 
   const { addToCart } = useCart();
-
   const shopRef = useRef<HTMLDivElement>(null);
 
   // Slide images every 10s
@@ -70,7 +71,7 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
       {/* Hero Section */}
       <motion.section
         className="absolute inset-0 w-full h-full bg-black"
-        animate={{ y: showShop ? "-100%" : 0 }}
+        animate={{ y: showShop || showEditor ? "-100%" : 0 }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
       >
         {/* Background */}
@@ -119,15 +120,16 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 className="px-8 py-4 rounded-full bg-gray-200 text-gray-900 font-semibold hover:bg-gray-300 transition"
+                onClick={() => setShowEditor(true)}
               >
-                Learn More
+                Create Your Own
               </motion.button>
             </div>
           </div>
 
           <div className="mt-12 md:mt-0 w-full h-[700px] relative flex items-center justify-end overflow-hidden">
             <div className="relative">
-              <div className="flex text-white text-[6rem] md:text-[14rem] relative"> {/* ✅ adjusted size for mobile */}
+              <div className="flex text-white text-[6rem] md:text-[14rem] relative">
                 {!showValid && (
                   <>
                     <motion.span
@@ -222,7 +224,7 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
                   <p className="text-lg font-bold">{product.price}</p>
                 </div>
                 <motion.div
-                  className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-100 sm:opacity-0" // ✅ Always visible on mobile
+                  className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-100 sm:opacity-0"
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
@@ -235,7 +237,7 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
                         price: parseFloat(product.price.replace("₹", "")),
                         image: product.image,
                       });
-                      toast.success("Added to your cart "); // ✅ Toast on add
+                      toast.success("Added to your cart ");
                     }}
                   >
                     Add to Cart
@@ -244,6 +246,24 @@ export default function HeroShop({ onCartClick, onAuthClick }: HeroShopProps) {
               </motion.div>
             ))}
           </div>
+        </div>
+      </motion.section>
+
+      {/* Design Editor Section */}
+      <motion.section
+        className="absolute inset-0 z-30 flex items-center justify-center bg-black/80"
+        initial={{ y: "100%" }}
+        animate={{ y: showEditor ? 0 : "100%" }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
+      >
+        <div className="relative bg-white rounded-2xl p-6 shadow-2xl">
+          <button
+            className="absolute top-3 right-3 px-4 py-2 bg-red-500 text-white rounded-lg"
+            onClick={() => setShowEditor(false)}
+          >
+            Close
+          </button>
+          <BasicEditor />
         </div>
       </motion.section>
     </div>
