@@ -8,11 +8,48 @@ import { useAuth } from "@/context/AuthProvider";
 import { placeOrder } from "@/lib/firestore";
 import { toast } from "react-hot-toast";
 
+// -----------------------------
+// Razorpay Type Definitions
+// -----------------------------
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill?: {
+    name?: string;
+    email?: string;
+    contact?: string;
+  };
+  theme?: { color: string };
+}
+
+interface RazorpayResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => { open: () => void };
+  }
+}
+
+// -----------------------------
+// Component Props
+// -----------------------------
 interface CartSidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+// -----------------------------
+// Component
+// -----------------------------
 export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
   const { cartItems = [], removeFromCart, updateQuantity, clearCart } = useCart();
   const { user } = useAuth();
@@ -35,7 +72,13 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
 
   const canProceedToShipping = cartItems.length > 0;
   const canProceedToReview =
-    name && phone && address.street && address.city && address.state && address.pincode && address.country;
+    name &&
+    phone &&
+    address.street &&
+    address.city &&
+    address.state &&
+    address.pincode &&
+    address.country;
 
   // Load Razorpay script once
   useEffect(() => {
@@ -45,6 +88,9 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
     document.body.appendChild(script);
   }, []);
 
+  // -----------------------------
+  // Razorpay Payment Handler
+  // -----------------------------
   const handleRazorpayPayment = async () => {
     if (!user) {
       toast.error("Please sign in to proceed with payment.");
@@ -65,14 +111,14 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
 
       if (!res.ok) throw new Error(order.error || "Order creation failed");
 
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      const options: RazorpayOptions = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
         amount: order.amount,
         currency: order.currency,
         name: "INVALID Lifestyle",
         description: "Purchase",
         order_id: order.id,
-        handler: async function (response: any) {
+        handler: async function (response: RazorpayResponse) {
           const savingToastId = toast.loading("Saving your order...");
           try {
             const orderId = await placeOrder(user.uid, name, phone, address, cartItems, total);
@@ -97,7 +143,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
         theme: { color: "#7e22ce" },
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new window.Razorpay(options);
       rzp.open();
       toast.dismiss(loadingToastId);
     } catch (err) {
@@ -108,6 +154,9 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
     }
   };
 
+  // -----------------------------
+  // Render
+  // -----------------------------
   return (
     <>
       {isOpen && (
@@ -123,6 +172,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
         animate={{ x: isOpen ? 0 : "100%" }}
         transition={{ type: "tween", duration: 0.3 }}
       >
+        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-700">
           <h2 className="text-2xl font-bold text-white">Your Cart</h2>
           <button onClick={onClose} className="text-white text-2xl hover:text-gray-400">
@@ -130,6 +180,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
           </button>
         </div>
 
+        {/* Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {/* Step 0: Cart */}
           {step === 0 && (
