@@ -18,13 +18,17 @@ interface DesignObject {
 }
 
 const TshirtModel = ({ texture }: { texture: THREE.Texture }) => {
-  const { scene } = useGLTF("/models/tshirt.glb") as any;
+  const { scene } = useGLTF("/models/tshirt.glb") as { scene: THREE.Group };
 
-  scene.traverse((child: any) => {
-    if (child.isMesh && child.material) {
-      child.material.map = texture;
-      child.material.color = new THREE.Color("#ffffff");
-      child.material.needsUpdate = true;
+  scene.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const mesh = child as THREE.Mesh;
+      const material = mesh.material as THREE.MeshStandardMaterial;
+      if (material) {
+        material.map = texture;
+        material.color = new THREE.Color("#ffffff");
+        material.needsUpdate = true;
+      }
     }
   });
 
@@ -44,7 +48,7 @@ const InteractiveTshirt = ({
   objects: DesignObject[];
   setObjects: React.Dispatch<React.SetStateAction<DesignObject[]>>;
   texture: THREE.Texture;
-  controlsRef: React.MutableRefObject<any>;
+  controlsRef: React.MutableRefObject<THREE.EventDispatcher | null>;
   setSelectedIndex: React.Dispatch<React.SetStateAction<number | null>>;
 }) => {
   const { camera, gl, scene } = useThree();
@@ -69,7 +73,9 @@ const InteractiveTshirt = ({
         const uv = intersects[0].uv;
         if (!uv) return;
 
-        if (controlsRef.current) controlsRef.current.enabled = false;
+        if (controlsRef.current && "enabled" in controlsRef.current) {
+          (controlsRef.current as any).enabled = false;
+        }
 
         selectedRef.current = { ...objects[objects.length - 1], uv };
         setSelectedIndex(objects.length - 1);
@@ -100,7 +106,9 @@ const InteractiveTshirt = ({
 
     const handlePointerUp = () => {
       selectedRef.current = null;
-      if (controlsRef.current) controlsRef.current.enabled = true;
+      if (controlsRef.current && "enabled" in controlsRef.current) {
+        (controlsRef.current as any).enabled = true;
+      }
     };
 
     gl.domElement.addEventListener("pointerdown", handlePointerDown);
@@ -122,7 +130,7 @@ const BasicEditor = () => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [canvasTexture, setCanvasTexture] = useState<THREE.CanvasTexture | null>(null);
 
-  const controlsRef = useRef<any>(null);
+ const controlsRef = useRef<React.ElementRef<typeof OrbitControls> | null>(null);
 
   // Create canvas only on client
   useEffect(() => {
@@ -153,7 +161,7 @@ const BasicEditor = () => {
     ctx.fillRect(0, 0, image.width, image.height);
 
     objects.forEach((obj) => {
-      if (!obj?.uv) return; // extra guard
+      if (!obj?.uv) return;
 
       const x = obj.uv.x * image.width;
       const y = (1 - obj.uv.y) * image.height;
