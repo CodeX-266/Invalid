@@ -6,6 +6,7 @@ import AuthModal from "@/components/AuthModal";
 import CartSidebar from "@/components/CartModal";
 import PolicyModal from "@/components/PolicyModal";
 import { useAuth } from "@/context/AuthProvider";
+import Link from "next/link";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -30,36 +31,61 @@ export default function HomePage() {
 
         {/* Footer as part of Hero section */}
         <footer className="absolute bottom-6 w-full text-gray-400 text-sm flex justify-center gap-6 z-50">
-          <button
-            onClick={() => setShowPrivacy(true)}
-            className="hover:text-white transition cursor-pointer"
-          >
-            Privacy Policy
-          </button>
-          <button
-            onClick={() => setShowTerms(true)}
-            className="hover:text-white transition cursor-pointer"
-          >
-            Terms & Conditions
-          </button>
-          <button
-            onClick={() => setShowRefund(true)}
-            className="hover:text-white transition cursor-pointer"
-          >
-            Cancellation & Refunds
-          </button>
-          <button
-            onClick={() => setShowShipping(true)}
-            className="hover:text-white transition cursor-pointer"
-          >
-            Shipping Policy
-          </button>
-          <button
-            onClick={() => setShowContact(true)}
-            className="hover:text-white transition cursor-pointer"
-          >
-            Contact Us
-          </button>
+          <Link href="/privacy" passHref>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setShowPrivacy(true);
+              }}
+              className="hover:text-white transition cursor-pointer"
+            >
+              Privacy Policy
+            </button>
+          </Link>
+          <Link href="/terms" passHref>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setShowTerms(true);
+              }}
+              className="hover:text-white transition cursor-pointer"
+            >
+              Terms & Conditions
+            </button>
+          </Link>
+          <Link href="/refund" passHref>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setShowRefund(true);
+              }}
+              className="hover:text-white transition cursor-pointer"
+            >
+              Cancellation & Refunds
+            </button>
+          </Link>
+          <Link href="/shipping" passHref>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setShowShipping(true);
+              }}
+              className="hover:text-white transition cursor-pointer"
+            >
+              Shipping Policy
+            </button>
+          </Link>
+          <Link href="/contact" passHref>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setShowContact(true);
+              }}
+              className="hover:text-white transition cursor-pointer"
+            >
+              Contact Us
+            </button>
+          </Link>
         </footer>
 
         {/* Auth Modal */}
@@ -144,9 +170,9 @@ export default function HomePage() {
           onClose={() => setShowContact(false)}
           content={
             <div className="space-y-2 text-gray-300">
-              <p>Email:  invalidlifestyle.global@gmail.com</p>
+              <p>Email: invalidlifestyle.global@gmail.com</p>
               <p>Phone: +91 80924 18238</p>
-              <p>Address: chennai,600127, Tamil Nadu</p>
+              <p>Address: Chennai, 600127, Tamil Nadu</p>
               <p>We are available Monday to Friday, 9 AM to 6 PM.</p>
             </div>
           }
