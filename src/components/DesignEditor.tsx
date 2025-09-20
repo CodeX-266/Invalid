@@ -48,7 +48,7 @@ const InteractiveTshirt = ({
   objects: DesignObject[];
   setObjects: React.Dispatch<React.SetStateAction<DesignObject[]>>;
   texture: THREE.Texture;
-  controlsRef: React.MutableRefObject<THREE.EventDispatcher | null>;
+  controlsRef: React.MutableRefObject<React.ElementRef<typeof OrbitControls> | null>;
   setSelectedIndex: React.Dispatch<React.SetStateAction<number | null>>;
 }) => {
   const { camera, gl, scene } = useThree();
@@ -73,9 +73,7 @@ const InteractiveTshirt = ({
         const uv = intersects[0].uv;
         if (!uv) return;
 
-        if (controlsRef.current && "enabled" in controlsRef.current) {
-          (controlsRef.current as any).enabled = false;
-        }
+        if (controlsRef.current) controlsRef.current.enabled = false;
 
         selectedRef.current = { ...objects[objects.length - 1], uv };
         setSelectedIndex(objects.length - 1);
@@ -106,9 +104,7 @@ const InteractiveTshirt = ({
 
     const handlePointerUp = () => {
       selectedRef.current = null;
-      if (controlsRef.current && "enabled" in controlsRef.current) {
-        (controlsRef.current as any).enabled = true;
-      }
+      if (controlsRef.current) controlsRef.current.enabled = true;
     };
 
     gl.domElement.addEventListener("pointerdown", handlePointerDown);
@@ -130,7 +126,7 @@ const BasicEditor = () => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [canvasTexture, setCanvasTexture] = useState<THREE.CanvasTexture | null>(null);
 
- const controlsRef = useRef<React.ElementRef<typeof OrbitControls> | null>(null);
+  const controlsRef = useRef<React.ElementRef<typeof OrbitControls> | null>(null);
 
   // Create canvas only on client
   useEffect(() => {
@@ -215,7 +211,7 @@ const BasicEditor = () => {
     setSelectedIndex(null);
   };
 
-  const updateSelected = (key: "scale" | "rotation" | "color", value: any) => {
+  const updateSelected = (key: "scale" | "rotation" | "color", value: number | string) => {
     if (selectedIndex === null || !objects[selectedIndex]) return;
     const newObjects = [...objects];
     newObjects[selectedIndex] = { ...newObjects[selectedIndex], [key]: value };
