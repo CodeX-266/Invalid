@@ -41,7 +41,7 @@ interface RazorpayOptions {
   name: string;
   description: string;
   order_id: string;
-  handler: (response: RazorpayPaymentResponse) => void;
+  handler: (_response: RazorpayPaymentResponse) => void;
   modal?: {
     ondismiss: () => void;
   };
@@ -53,6 +53,16 @@ interface RazorpayOptions {
   theme?: {
     color?: string;
   };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+  }
 }
 
 export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
@@ -83,7 +93,6 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
     !!address.pincode &&
     !!address.country;
 
-  // Load Razorpay script once
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -115,7 +124,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
         name: "INVALID Lifestyle",
         description: "Purchase",
         order_id: order.id,
-        handler: async function (response: RazorpayPaymentResponse) {
+        handler: async function (_response: RazorpayPaymentResponse) {
           setIsPlacingOrder(true);
           const loadingToastId = toast.loading("Placing your order...");
 
@@ -148,7 +157,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
         theme: { color: "#7e22ce" },
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new window.Razorpay(options);
       rzp.open();
       setIsPlacingOrder(true);
     } catch (err) {
