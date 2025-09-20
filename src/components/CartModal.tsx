@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useCart } from "@/context/CartProvider";
+import { useCart, CartItem } from "@/context/CartProvider";
 import { useAuth } from "@/context/AuthProvider";
 import { placeOrder } from "@/lib/firestore";
 import { toast } from "react-hot-toast";
@@ -13,15 +13,22 @@ interface CartSidebarProps {
   onClose: () => void;
 }
 
+interface Address {
+  street: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
+}
+
 export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
   const { cartItems = [], removeFromCart, updateQuantity, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user } = useAuth(); // type inferred from context
 
-  const [step, setStep] = useState(0);
-
-  const [name, setName] = useState(user?.displayName || "");
-  const [phone, setPhone] = useState(user?.phoneNumber || "");
-  const [address, setAddress] = useState({
+  const [step, setStep] = useState<number>(0);
+  const [name, setName] = useState<string>(user?.displayName || "");
+  const [phone, setPhone] = useState<string>(user?.phoneNumber || "");
+  const [address, setAddress] = useState<Address>({
     street: "",
     city: "",
     state: "",
@@ -29,13 +36,19 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
     country: "",
   });
 
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState<boolean>(false);
 
-  const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const total: number = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const canProceedToShipping = cartItems.length > 0;
-  const canProceedToReview =
-    name && phone && address.street && address.city && address.state && address.pincode && address.country;
+  const canProceedToShipping: boolean = cartItems.length > 0;
+  const canProceedToReview: boolean =
+    !!name &&
+    !!phone &&
+    !!address.street &&
+    !!address.city &&
+    !!address.state &&
+    !!address.pincode &&
+    !!address.country;
 
   // Load Razorpay script once
   useEffect(() => {
@@ -45,7 +58,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
     document.body.appendChild(script);
   }, []);
 
-  const handleRazorpayPayment = async () => {
+  const handleRazorpayPayment = async (): Promise<void> => {
     if (!user) {
       toast.error("Please sign in to proceed with payment.");
       return;
@@ -60,16 +73,16 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
 
       if (!res.ok) throw new Error("Failed to create order");
 
-      const order = await res.json();
+      const order: { id: string; amount: number; currency: string } = await res.json();
 
-      const options = {
+      const options: any = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
         name: "INVALID Lifestyle",
         description: "Purchase",
         order_id: order.id,
-        handler: async function (response: any) {
+        handler: async function () {
           setIsPlacingOrder(true);
           const loadingToastId = toast.loading("Placing your order...");
 
@@ -90,7 +103,6 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
         },
         modal: {
           ondismiss: () => {
-            // Reset isPlacingOrder if user cancels
             setIsPlacingOrder(false);
             toast.error("Payment cancelled.");
           },
@@ -142,8 +154,11 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
               {cartItems.length === 0 ? (
                 <p className="text-gray-400 text-center mt-20">Your cart is empty</p>
               ) : (
-                cartItems.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition">
+                cartItems.map((item: CartItem) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition"
+                  >
                     <Image src={item.image} alt={item.name} width={80} height={80} className="rounded" />
                     <div className="flex-1">
                       <h3 className="text-white font-semibold">{item.name}</h3>
@@ -281,7 +296,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
             <div className="space-y-4">
               <h3 className="text-white text-xl font-semibold">Review Your Cart</h3>
               <div className="space-y-2 max-h-80 overflow-y-auto">
-                {cartItems.map((item) => (
+                {cartItems.map((item: CartItem) => (
                   <div key={item.id} className="flex items-center space-x-4 bg-gray-800 p-3 rounded-lg">
                     <Image src={item.image} alt={item.name} width={60} height={60} className="rounded" />
                     <div className="flex-1 text-white">
@@ -321,8 +336,12 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
               <div className="bg-gray-800 p-4 rounded-lg text-white space-y-1">
                 <p>{name}</p>
                 <p>{phone}</p>
-                <p>{address.street}, {address.city}, {address.state}</p>
-                <p>{address.pincode}, {address.country}</p>
+                <p>
+                  {address.street}, {address.city}, {address.state}
+                </p>
+                <p>
+                  {address.pincode}, {address.country}
+                </p>
               </div>
               <div className="flex justify-between items-center mt-2 mb-3 text-white font-bold">
                 <span>Total:</span>
