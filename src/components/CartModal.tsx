@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useCart } from "@/context/CartProvider";
@@ -17,7 +17,6 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
   const { cartItems = [], removeFromCart, updateQuantity, clearCart } = useCart();
   const { user } = useAuth();
 
-  // Checkout steps: 0 = Cart, 1 = Shipping, 2 = Review, 3 = Confirm
   const [step, setStep] = useState(0);
 
   const [name, setName] = useState(user?.displayName || "");
@@ -38,34 +37,84 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
   const canProceedToReview =
     name && phone && address.street && address.city && address.state && address.pincode && address.country;
 
-  const handlePlaceOrder = async () => {
+  // Load Razorpay script once
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  const handleRazorpayPayment = async () => {
     if (!user) {
-      toast.error("Please sign in to place an order.");
+      toast.error("Please sign in to proceed with payment.");
       return;
     }
 
-    setIsPlacingOrder(true);
-    const loadingToastId = toast.loading("Placing your order...");
-
     try {
-      const orderId = await placeOrder(user.uid, name, phone, address, cartItems, total);
-      clearCart();
-      toast.dismiss(loadingToastId);
-      toast.success(`Order placed successfully! Order ID: ${orderId}`);
-      onClose();
-      setStep(0); // Reset to cart
+      const res = await fetch("/api/payment/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total, currency: "INR" }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create order");
+
+      const order = await res.json();
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "INVALID Lifestyle",
+        description: "Purchase",
+        order_id: order.id,
+        handler: async function (response: any) {
+          setIsPlacingOrder(true);
+          const loadingToastId = toast.loading("Placing your order...");
+
+          try {
+            const orderId = await placeOrder(user.uid, name, phone, address, cartItems, total);
+            clearCart();
+            toast.dismiss(loadingToastId);
+            toast.success(`Payment & Order Successful! Order ID: ${orderId}`);
+            onClose();
+            setStep(0);
+          } catch (err) {
+            console.error(err);
+            toast.dismiss(loadingToastId);
+            toast.error("Failed to save order after payment.");
+          } finally {
+            setIsPlacingOrder(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            // Reset isPlacingOrder if user cancels
+            setIsPlacingOrder(false);
+            toast.error("Payment cancelled.");
+          },
+        },
+        prefill: {
+          name: name || "Customer",
+          email: user.email || "",
+          contact: phone || "",
+        },
+        theme: { color: "#7e22ce" },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+      setIsPlacingOrder(true);
     } catch (err) {
       console.error(err);
-      toast.dismiss(loadingToastId);
-      toast.error("Failed to place order. Please try again.");
-    } finally {
       setIsPlacingOrder(false);
+      toast.error("Failed to initiate payment. Try again!");
     }
   };
 
   return (
     <>
-      {/* Backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
@@ -73,29 +122,21 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
         />
       )}
 
-      {/* Cart Panel */}
       <motion.div
         className="fixed top-0 right-0 h-full z-50 w-full sm:w-80 md:w-96 lg:w-[35%] flex flex-col shadow-2xl bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 border-l border-gray-700"
         initial={{ x: "100%" }}
         animate={{ x: isOpen ? 0 : "100%" }}
         transition={{ type: "tween", duration: 0.3 }}
       >
-        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-700">
           <h2 className="text-2xl font-bold text-white">Your Cart</h2>
-          <button onClick={onClose} className="text-white text-2xl hover:text-gray-400">✕</button>
+          <button onClick={onClose} className="text-white text-2xl hover:text-gray-400">
+            ✕
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {/* Step Indicators */}
-          <div className="flex justify-between mb-4 text-sm text-gray-300 font-semibold">
-            <span className={step === 0 ? "text-white" : ""}>Cart</span>
-            <span className={step === 1 ? "text-white" : ""}>Shipping</span>
-            <span className={step === 2 ? "text-white" : ""}>Review</span>
-            <span className={step === 3 ? "text-white" : ""}>Confirm</span>
-          </div>
-
-          {/* Step 0: Cart Items */}
+          {/* Step 0: Cart */}
           {step === 0 && (
             <>
               {cartItems.length === 0 ? (
@@ -112,16 +153,22 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           className="px-2 py-1 bg-gray-700 rounded hover:bg-gray-600"
                           disabled={item.quantity <= 1}
-                        >-</button>
+                        >
+                          -
+                        </button>
                         <span className="text-white">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           className="px-2 py-1 bg-gray-700 rounded hover:bg-gray-600"
-                        >+</button>
+                        >
+                          +
+                        </button>
                         <button
                           onClick={() => removeFromCart(item.id)}
                           className="ml-auto text-red-500 font-semibold hover:text-red-400"
-                        >Remove</button>
+                        >
+                          Remove
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -266,7 +313,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
             </div>
           )}
 
-          {/* Step 3: Confirm */}
+          {/* Step 3: Confirm & Razorpay */}
           {step === 3 && (
             <div className="space-y-4">
               <h3 className="text-white text-xl font-semibold">Confirm Your Order</h3>
@@ -281,20 +328,20 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
                 <span>Total:</span>
                 <span>${total.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between gap-2">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={() => setStep(2)}
-                  className="flex-1 py-2 bg-gray-700 rounded-lg text-white hover:bg-gray-600 transition"
+                  className="w-full py-2 bg-gray-700 rounded-lg text-white hover:bg-gray-600 transition"
                   disabled={isPlacingOrder}
                 >
                   Back
                 </button>
                 <button
-                  onClick={handlePlaceOrder}
-                  className="flex-1 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg shadow hover:scale-105 transition disabled:opacity-50"
+                  onClick={handleRazorpayPayment}
+                  className="w-full py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold rounded-lg shadow hover:scale-105 transition disabled:opacity-50"
                   disabled={isPlacingOrder}
                 >
-                  {isPlacingOrder ? "Placing Order..." : "Place Order"}
+                  {isPlacingOrder ? "Processing..." : "Pay & Place Order"}
                 </button>
               </div>
             </div>
