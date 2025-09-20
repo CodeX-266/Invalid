@@ -21,9 +21,43 @@ interface Address {
   country: string;
 }
 
+// Razorpay types
+interface RazorpayOrderResponse {
+  id: string;
+  amount: number;
+  currency: string;
+}
+
+interface RazorpayPaymentResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayPaymentResponse) => void;
+  modal?: {
+    ondismiss: () => void;
+  };
+  prefill?: {
+    name?: string;
+    email?: string;
+    contact?: string;
+  };
+  theme?: {
+    color?: string;
+  };
+}
+
 export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
   const { cartItems = [], removeFromCart, updateQuantity, clearCart } = useCart();
-  const { user } = useAuth(); // type inferred from context
+  const { user } = useAuth();
 
   const [step, setStep] = useState<number>(0);
   const [name, setName] = useState<string>(user?.displayName || "");
@@ -35,7 +69,6 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
     pincode: "",
     country: "",
   });
-
   const [isPlacingOrder, setIsPlacingOrder] = useState<boolean>(false);
 
   const total: number = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -73,16 +106,16 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
 
       if (!res.ok) throw new Error("Failed to create order");
 
-      const order: { id: string; amount: number; currency: string } = await res.json();
+      const order: RazorpayOrderResponse = await res.json();
 
-      const options: any = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      const options: RazorpayOptions = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
         amount: order.amount,
         currency: order.currency,
         name: "INVALID Lifestyle",
         description: "Purchase",
         order_id: order.id,
-        handler: async function () {
+        handler: async function (response: RazorpayPaymentResponse) {
           setIsPlacingOrder(true);
           const loadingToastId = toast.loading("Placing your order...");
 
@@ -140,6 +173,7 @@ export default function CartModal({ isOpen, onClose }: CartSidebarProps) {
         animate={{ x: isOpen ? 0 : "100%" }}
         transition={{ type: "tween", duration: 0.3 }}
       >
+        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-700">
           <h2 className="text-2xl font-bold text-white">Your Cart</h2>
           <button onClick={onClose} className="text-white text-2xl hover:text-gray-400">
